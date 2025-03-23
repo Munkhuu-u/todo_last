@@ -1,0 +1,58 @@
+* {
+  box-sizing: border-box;
+  margin: 0px;
+  padding: 0px;
+}
+
+#root {
+  padding: 10px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.boards {
+  padding: 10px;
+
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: space-around;
+
+  border: 1px solid black;
+  border-radius: 10px;
+}
+
+.board {
+  gap: 10px;
+  padding: 10px;
+
+  border: 1px solid black;
+  border-radius: 10px;
+}
+
+#modal {
+  display: none;
+  backdrop-filter: blur(5px);
+
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#modalInner {
+  border: 1px solid black;
+}
+
+#form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
