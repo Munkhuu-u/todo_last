@@ -21,21 +21,10 @@ let inputField = [
     inputId: "desc",
     inputType: "text",
   },
-  {
-    labelFor: "status",
-    labelHTML: "Status",
-    inputName: "status",
-    inputId: "status",
-    inputType: "text",
-  },
-  {
-    labelFor: "priotity",
-    labelHTML: "Priority",
-    inputName: "priotity",
-    inputId: "priotity",
-    inputType: "text",
-  },
 ];
+
+let statArr = ["Todo", "In progress", "Stuck", "Done"];
+let priorArr = ["High", "Medium", "Low"];
 
 let taskArr = [];
 
@@ -90,6 +79,63 @@ function modal() {
     form.appendChild(inputControl);
   });
 
+  //Status
+  let inputControl = document.createElement("div");
+  inputControl.setAttribute("class", "inputControl");
+
+  let label = document.createElement("label");
+  label.for = "status";
+  label.textContent = "Status";
+
+  let select = document.createElement("select");
+  select.form = "form";
+  select.id = "status";
+  select.name = "status";
+
+  statArr.forEach((e) => {
+    console.log("foreach working");
+    let option = document.createElement("option");
+    option.value = e; // Set option value
+    option.textContent = e; // Set visible text
+    select.appendChild(option); // Add option to select dropdown
+  });
+
+  inputControl.appendChild(label);
+  inputControl.appendChild(select);
+  form.appendChild(inputControl);
+
+  //Priority
+  let inputControlP = document.createElement("div");
+  inputControlP.setAttribute("class", "inputControl");
+
+  let labelP = document.createElement("label");
+  labelP.for = "priority";
+  labelP.textContent = "Priority";
+
+  let selectP = document.createElement("select");
+  selectP.form = "form";
+  selectP.id = "priority";
+  selectP.name = "priority";
+
+  priorArr.forEach((e) => {
+    const option = document.createElement("option");
+    option.value = e; // Set option value
+    option.textContent = e; // Set visible text
+    selectP.appendChild(option); // Add option to select dropdown
+  });
+
+  inputControlP.appendChild(labelP);
+  inputControlP.appendChild(selectP);
+  form.appendChild(inputControlP);
+
+  //labelFor :
+  //labelInnerHTML
+  //selectId:
+  //selectname:
+  //optionValue:
+  //optionInnerHTML:
+
+  //Submit
   let submitButt = document.createElement("button");
   submitButt.setAttribute("type", "submit");
   submitButt.innerHTML = "Confirm";
@@ -121,4 +167,16 @@ boardArr.map((e) => {
 addtask();
 modal();
 
-//make priority, status inputs optional
+//-------------DONE-------------
+//make priority, status inputs optional - !!! Long
+
+//-------------TODO-------------
+//clear form when submit
+//get data from form and push into an arr
+//filter into board array
+//make card
+//drag & drop
+//edit
+//delete
+//save on local storage
+//
