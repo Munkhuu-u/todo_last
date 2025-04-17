@@ -5,6 +5,9 @@ boards.setAttribute("class", "boards");
 root.appendChild(boards);
 
 let boardArr = ["Todo", "In progress", "Stuck", "Done"];
+let statArr = ["Todo", "In progress", "Stuck", "Done"];
+let priorArr = ["High", "Medium", "Low"];
+let serial = 0;
 
 let inputField = [
   {
@@ -22,12 +25,7 @@ let inputField = [
     inputType: "text",
   },
 ];
-
-let statArr = ["Todo", "In progress", "Stuck", "Done"];
-let priorArr = ["High", "Medium", "Low"];
-
-let taskArr = [];
-
+let AllTaskArr = [[], [], [], []];
 function addtask() {
   let addTaskButt = document.createElement("button");
   addTaskButt.innerHTML = "+Add task";
@@ -35,14 +33,31 @@ function addtask() {
   root.appendChild(addTaskButt);
 }
 function push(e) {
+  let id = "";
+  serial += 1;
+
+  console.log("push fn working");
   let form = document.getElementById("form");
   let formData = new FormData(form);
   let data = {};
+
   formData.forEach((value, key) => {
     data[key] = value;
   });
-  taskArr.push(data);
-  console.log("taskArr: ", taskArr);
+
+  boardArr.map((e, i) => {
+    data.status == e ? (data.id = `${serial}`) : console.log("assigning id");
+  });
+
+  let pushingBoardId = "";
+
+  boardArr.map((e, i) => {
+    e == data.status
+      ? (AllTaskArr[i].push(data), (pushingBoardId = `board-${e}`))
+      : console.log("push fn working");
+  });
+
+  taskMaker(data, pushingBoardId);
 }
 
 function modal() {
@@ -93,7 +108,7 @@ function modal() {
   select.name = "status";
 
   statArr.forEach((e) => {
-    console.log("foreach working");
+    // console.log("foreach working");
     let option = document.createElement("option");
     option.value = e; // Set option value
     option.textContent = e; // Set visible text
@@ -128,33 +143,63 @@ function modal() {
   inputControlP.appendChild(selectP);
   form.appendChild(inputControlP);
 
-  //labelFor :
-  //labelInnerHTML
-  //selectId:
-  //selectname:
-  //optionValue:
-  //optionInnerHTML:
-
   //Submit
   let submitButt = document.createElement("button");
   submitButt.setAttribute("type", "submit");
   submitButt.innerHTML = "Confirm";
+
   submitButt.addEventListener("click", (e) => {
+    console.log("Submit fn is working");
     e.preventDefault();
     push(e);
     modalVisibility();
+    form.reset();
   });
+
   form.appendChild(submitButt);
   modalInner.appendChild(form);
 }
 function boardMaker(e) {
   let board = document.createElement("div");
   board.setAttribute("class", "board");
+  board.id = `board-${e}`;
   boards.appendChild(board);
 
   let boardTitle = document.createElement("h2");
   boardTitle.innerHTML = `${e}`;
   board.append(boardTitle);
+}
+// function taskMaker(task, baordNum) {
+function taskMaker(task, boardId) {
+  console.log("boardId: ", boardId);
+
+  let taskContainer = document.createElement("div");
+  taskContainer.class = "task";
+
+  let title = document.createElement("h2");
+  title.textContent = `${task.title}`;
+  taskContainer.appendChild(title);
+
+  let desc = document.createElement("p");
+  desc.innerHTML = `${task.description}`;
+  taskContainer.appendChild(desc);
+
+  let prio = document.createElement("p");
+  prio.innerHTML = `${task.priority}`;
+  taskContainer.appendChild(prio);
+
+  let editButt = document.createElement("button");
+  editButt.innerHTML = "Edit";
+  taskContainer.appendChild(editButt);
+
+  let deleteButt = document.createElement("button");
+  deleteButt.innerHTML = "Delete";
+  taskContainer.appendChild(deleteButt);
+
+  // console.log("boardNum: ", baordNum);
+  // console.log("boardName: ", `board-${boardArr[baordNum]}`);
+  let board = document.getElementById(boardId);
+  board.appendChild(taskContainer);
 }
 function modalVisibility() {
   let x = document.getElementById("modal");
@@ -168,15 +213,15 @@ addtask();
 modal();
 
 //-------------DONE-------------
-//make priority, status inputs optional - !!! Long
+//make priority, status inputs optional - !!! Long coding
+//clear form when submit
 
 //-------------TODO-------------
-//clear form when submit
-//get data from form and push into an arr
+//card maker
+//get data from form and push into different arrays
 //filter into board array
 //make card
 //drag & drop
 //edit
 //delete
 //save on local storage
-//

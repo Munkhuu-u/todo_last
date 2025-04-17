@@ -4,6 +4,10 @@
   padding: 0px;
 }
 
+#home {
+  background-color: darkgray;
+}
+
 #root {
   padding: 10px;
 
