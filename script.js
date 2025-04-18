@@ -45,21 +45,47 @@ function push(e) {
     data[key] = value;
   });
 
+  // insert ID
   boardArr.map((e, i) => {
     data.status == e ? (data.id = `${serial}`) : console.log("assigning id");
   });
 
+  // set priotity number to sort
+  switch (data.priority) {
+    case "High":
+      data.priorityNumber = 1;
+      break;
+    case "Medium":
+      data.priorityNumber = 2;
+      break;
+    case "Low":
+      data.priorityNumber = 3;
+      break;
+  }
+
+  //when call taskmaker fn need to declare which in board going to print task
   let pushingBoardId = "";
+  let arrToPrint = [];
 
   boardArr.map((e, i) => {
     e == data.status
-      ? (AllTaskArr[i].push(data), (pushingBoardId = `board-${e}`))
+      ? ((pushingContainersId = `taskContainers-${e}`),
+        AllTaskArr[i].push(data),
+        (AllTaskArr[i] = AllTaskArr[i].sort(
+          (a, b) => a.priorityNumber - b.priorityNumber
+        )),
+        (arrToPrint = AllTaskArr[i]))
       : console.log("push fn working");
   });
 
-  taskMaker(data, pushingBoardId);
-}
+  let container = document.getElementById(pushingContainersId);
 
+  container.innerHTML = "";
+
+  arrToPrint.map((task) => {
+    taskMaker(task, pushingContainersId);
+  });
+}
 function modal() {
   let modal = document.createElement("div");
   modal.setAttribute("id", "modal");
@@ -168,10 +194,14 @@ function boardMaker(e) {
   let boardTitle = document.createElement("h2");
   boardTitle.innerHTML = `${e}`;
   board.append(boardTitle);
+
+  let taskContainers = document.createElement("div");
+  taskContainers.id = `taskContainers-${e}`;
+  board.appendChild(taskContainers);
 }
 // function taskMaker(task, baordNum) {
-function taskMaker(task, boardId) {
-  console.log("boardId: ", boardId);
+function taskMaker(task, containersId) {
+  let container = document.getElementById(containersId);
 
   let taskContainer = document.createElement("div");
   taskContainer.class = "task";
@@ -196,10 +226,7 @@ function taskMaker(task, boardId) {
   deleteButt.innerHTML = "Delete";
   taskContainer.appendChild(deleteButt);
 
-  // console.log("boardNum: ", baordNum);
-  // console.log("boardName: ", `board-${boardArr[baordNum]}`);
-  let board = document.getElementById(boardId);
-  board.appendChild(taskContainer);
+  container.appendChild(taskContainer);
 }
 function modalVisibility() {
   let x = document.getElementById("modal");
@@ -215,13 +242,20 @@ modal();
 //-------------DONE-------------
 //make priority, status inputs optional - !!! Long coding
 //clear form when submit
-
-//-------------TODO-------------
 //card maker
 //get data from form and push into different arrays
 //filter into board array
-//make card
+//sort by priority
+
+//-------------TODO-------------
 //drag & drop
 //edit
 //delete
+
+//modal close when press outside
+//make card looks good, arrangement, edit, delete icon
+//background picture
+
 //save on local storage
+//save info-s in backend
+//responsive css
