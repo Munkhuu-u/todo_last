@@ -8,6 +8,7 @@ let boardArr = ["Todo", "In progress", "Stuck", "Done"];
 let statArr = ["Todo", "In progress", "Stuck", "Done"];
 let priorArr = ["High", "Medium", "Low"];
 let serial = 0;
+let AllTaskArr = [[], [], [], []];
 
 let inputField = [
   {
@@ -25,7 +26,6 @@ let inputField = [
     inputType: "text",
   },
 ];
-let AllTaskArr = [[], [], [], []];
 function addtask() {
   let addTaskButt = document.createElement("button");
   addTaskButt.innerHTML = "+Add task";
@@ -189,7 +189,41 @@ function boardMaker(e) {
   let board = document.createElement("div");
   board.setAttribute("class", "board");
   board.id = `board-${e}`;
-  boards.appendChild(board);
+
+  // codelines from boardMaker
+  board.addEventListener("dragover", (e) => {
+    e.preventDefault(); // Needed to allow dropping
+  });
+
+  board.addEventListener("drop", (e) => {
+    e.preventDefault();
+
+    const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+    const fromBoard = boardArr.indexOf(data.from);
+    const toBoard = boardArr.indexOf(
+      e.target.closest(".board").id.replace("board-", "")
+    );
+
+    if (fromBoard !== -1 && toBoard !== -1 && fromBoard !== toBoard) {
+      // Find and remove task from old board
+      const taskIndex = AllTaskArr[fromBoard].findIndex(
+        (task) => task.id === data.id
+      );
+      const [task] = AllTaskArr[fromBoard].splice(taskIndex, 1);
+
+      // Update status and push into new board
+      task.status = boardArr[toBoard];
+      AllTaskArr[toBoard].push(task);
+
+      // Sort and re-render both boards
+      AllTaskArr[toBoard] = AllTaskArr[toBoard].sort(
+        (a, b) => a.priorityNumber - b.priorityNumber
+      );
+      renderBoard(boardArr[fromBoard]);
+      renderBoard(boardArr[toBoard]);
+    }
+  });
+  // codelines from boardMaker
 
   let boardTitle = document.createElement("h2");
   boardTitle.innerHTML = `${e}`;
@@ -198,13 +232,29 @@ function boardMaker(e) {
   let taskContainers = document.createElement("div");
   taskContainers.id = `taskContainers-${e}`;
   board.appendChild(taskContainers);
+
+  boards.appendChild(board);
 }
 // function taskMaker(task, baordNum) {
 function taskMaker(task, containersId) {
   let container = document.getElementById(containersId);
-
   let taskContainer = document.createElement("div");
-  taskContainer.class = "task";
+
+  taskContainer.setAttribute("draggable", true);
+  taskContainer.dataset.id = task.id;
+  taskContainer.dataset.from = task.status;
+
+  taskContainer.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData(
+      "text/plain",
+      JSON.stringify({
+        id: task.id,
+        from: task.status,
+      })
+    );
+  });
+
+  taskContainer.className = "task";
 
   let title = document.createElement("h2");
   title.textContent = `${task.title}`;
@@ -236,6 +286,19 @@ boardArr.map((e) => {
   boardMaker(e);
 });
 
+// codes from chatgpt
+function renderBoard(status) {
+  const i = boardArr.indexOf(status);
+  const container = document.getElementById(`taskContainers-${status}`);
+  container.innerHTML = "";
+
+  AllTaskArr[i].forEach((task) => {
+    taskMaker(task, `taskContainers-${status}`);
+  });
+
+  console.log("all task:", AllTaskArr);
+}
+
 addtask();
 modal();
 
@@ -246,9 +309,9 @@ modal();
 //get data from form and push into different arrays
 //filter into board array
 //sort by priority
+//drag & drop
 
 //-------------TODO-------------
-//drag & drop
 //edit
 //delete
 
