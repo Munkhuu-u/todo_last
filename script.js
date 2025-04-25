@@ -8,8 +8,23 @@ let boardArr = ["Todo", "In progress", "Stuck", "Done"];
 let statArr = ["Todo", "In progress", "Stuck", "Done"];
 let priorArr = ["High", "Medium", "Low"];
 let serial = 0;
-let AllTaskArr = [[], [], [], []];
+let editingTask = null;
 
+let AllTaskArr = [
+  [
+    {
+      description: "sample desc",
+      id: "1",
+      priority: "Medium",
+      priorityNumber: 2,
+      status: "Todo",
+      title: "sample title",
+    },
+  ],
+  [],
+  [],
+  [],
+];
 let inputField = [
   {
     labelFor: "title",
@@ -29,14 +44,17 @@ let inputField = [
 function addtask() {
   let addTaskButt = document.createElement("button");
   addTaskButt.innerHTML = "+Add task";
-  addTaskButt.addEventListener("click", modalVisibility);
+  addTaskButt.addEventListener("click", () => {
+    // modal();
+    modalVisibility();
+  });
   root.appendChild(addTaskButt);
 }
 function push(e) {
+  console.log("push fn working");
   let id = "";
   serial += 1;
 
-  console.log("push fn working");
   let form = document.getElementById("form");
   let formData = new FormData(form);
   let data = {};
@@ -46,8 +64,10 @@ function push(e) {
   });
 
   // insert ID
-  boardArr.map((e, i) => {
-    data.status == e ? (data.id = `${serial}`) : console.log("assigning id");
+  boardArr.map((boardName, i) => {
+    data.status == boardName
+      ? (data.id = `${serial}`)
+      : console.log("assigning id");
   });
 
   // set priotity number to sort
@@ -64,7 +84,7 @@ function push(e) {
   }
 
   //when call taskmaker fn need to declare which in board going to print task
-  let pushingBoardId = "";
+  let pushingContainersId = "";
   let arrToPrint = [];
 
   boardArr.map((e, i) => {
@@ -78,15 +98,61 @@ function push(e) {
       : console.log("push fn working");
   });
 
-  let container = document.getElementById(pushingContainersId);
-
-  container.innerHTML = "";
-
   arrToPrint.map((task) => {
     taskMaker(task, pushingContainersId);
   });
 }
+function submitHandler(e) {
+  e.preventDefault();
+  if (editingTask) {
+    console.log("editing");
+
+    const form = document.getElementById("form");
+    const oldStatus = editingTask.status;
+
+    editingTask.title = form.title.value;
+    editingTask.description = form.description.value;
+    editingTask.status = form.status.value;
+    editingTask.priority = form.priority.value;
+
+    // update priority number
+    switch (editingTask.priority) {
+      case "High":
+        editingTask.priorityNumber = 1;
+        break;
+      case "Medium":
+        editingTask.priorityNumber = 2;
+        break;
+      case "Low":
+        editingTask.priorityNumber = 3;
+        break;
+    }
+
+    // remove from old board
+    boardArr.forEach((_, i) => {
+      AllTaskArr[i] = AllTaskArr[i].filter((t) => t.id !== editingTask.id);
+    });
+
+    // add to new board
+    const newIndex = boardArr.indexOf(editingTask.status);
+    AllTaskArr[newIndex].push(editingTask);
+    AllTaskArr[newIndex].sort((a, b) => a.priorityNumber - b.priorityNumber);
+
+    editingTask = null; // reset
+    renderBoard(oldStatus);
+    renderBoard(boardArr[newIndex]);
+  } else {
+    console.log("adding");
+    push(e);
+
+    boardArr.forEach((e) => {
+      renderBoard(e);
+    });
+  }
+  modalVisibility();
+}
 function modal() {
+  console.log("modal fn is running");
   let modal = document.createElement("div");
   modal.setAttribute("id", "modal");
   root.appendChild(modal);
@@ -101,6 +167,7 @@ function modal() {
 
   let form = document.createElement("form");
   form.setAttribute("id", "form");
+  modalInner.appendChild(form);
 
   inputField.map((e) => {
     let inputControl = document.createElement("div");
@@ -173,15 +240,12 @@ function modal() {
   let submitButt = document.createElement("button");
   submitButt.setAttribute("type", "submit");
   submitButt.innerHTML = "Confirm";
+  submitButt.id = "submit-btn";
 
   submitButt.addEventListener("click", (e) => {
-    console.log("Submit fn is working");
-    e.preventDefault();
-    push(e);
-    modalVisibility();
+    submitHandler(e);
     form.reset();
   });
-
   form.appendChild(submitButt);
   modalInner.appendChild(form);
 }
@@ -189,41 +253,6 @@ function boardMaker(e) {
   let board = document.createElement("div");
   board.setAttribute("class", "board");
   board.id = `board-${e}`;
-
-  // codelines from boardMaker
-  board.addEventListener("dragover", (e) => {
-    e.preventDefault(); // Needed to allow dropping
-  });
-
-  board.addEventListener("drop", (e) => {
-    e.preventDefault();
-
-    const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-    const fromBoard = boardArr.indexOf(data.from);
-    const toBoard = boardArr.indexOf(
-      e.target.closest(".board").id.replace("board-", "")
-    );
-
-    if (fromBoard !== -1 && toBoard !== -1 && fromBoard !== toBoard) {
-      // Find and remove task from old board
-      const taskIndex = AllTaskArr[fromBoard].findIndex(
-        (task) => task.id === data.id
-      );
-      const [task] = AllTaskArr[fromBoard].splice(taskIndex, 1);
-
-      // Update status and push into new board
-      task.status = boardArr[toBoard];
-      AllTaskArr[toBoard].push(task);
-
-      // Sort and re-render both boards
-      AllTaskArr[toBoard] = AllTaskArr[toBoard].sort(
-        (a, b) => a.priorityNumber - b.priorityNumber
-      );
-      renderBoard(boardArr[fromBoard]);
-      renderBoard(boardArr[toBoard]);
-    }
-  });
-  // codelines from boardMaker
 
   let boardTitle = document.createElement("h2");
   boardTitle.innerHTML = `${e}`;
@@ -234,16 +263,48 @@ function boardMaker(e) {
   board.appendChild(taskContainers);
 
   boards.appendChild(board);
+
+  // drag & drop
+  board.addEventListener("dragover", (e) => {
+    e.preventDefault();
+  });
+
+  board.addEventListener("drop", (e) => {
+    e.preventDefault;
+    const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+
+    // geting status and finding related index of boardArr and assigning into fromBoard
+    const fromBoard = boardArr.indexOf(data.from);
+
+    const toBoard = boardArr.indexOf(
+      e.target.closest(".board").id.replace("board-", "")
+    );
+
+    if (fromBoard !== -1 && toBoard !== -1 && fromBoard !== toBoard) {
+      const taskIndex = AllTaskArr[fromBoard].findIndex(
+        (task) => task.id === data.id
+      );
+
+      const [task] = AllTaskArr[fromBoard].splice(taskIndex, 1);
+      task.status = boardArr[toBoard];
+      AllTaskArr[toBoard].push(task);
+      AllTaskArr[toBoard] = AllTaskArr[toBoard].sort(
+        (a, b) => a.priorityNumber - b.priorityNumber
+      );
+      renderBoard(boardArr[fromBoard]);
+      renderBoard(boardArr[toBoard]);
+    }
+  });
 }
-// function taskMaker(task, baordNum) {
 function taskMaker(task, containersId) {
   let container = document.getElementById(containersId);
   let taskContainer = document.createElement("div");
+  taskContainer.className = "task";
 
+  // drag & drop
   taskContainer.setAttribute("draggable", true);
   taskContainer.dataset.id = task.id;
   taskContainer.dataset.from = task.status;
-
   taskContainer.addEventListener("dragstart", (e) => {
     e.dataTransfer.setData(
       "text/plain",
@@ -253,8 +314,7 @@ function taskMaker(task, containersId) {
       })
     );
   });
-
-  taskContainer.className = "task";
+  // drag & drop
 
   let title = document.createElement("h2");
   title.textContent = `${task.title}`;
@@ -270,6 +330,10 @@ function taskMaker(task, containersId) {
 
   let editButt = document.createElement("button");
   editButt.innerHTML = "Edit";
+  editButt.addEventListener("click", () => {
+    editFn(task);
+  });
+
   taskContainer.appendChild(editButt);
 
   let deleteButt = document.createElement("button");
@@ -285,8 +349,6 @@ function modalVisibility() {
 boardArr.map((e) => {
   boardMaker(e);
 });
-
-// codes from chatgpt
 function renderBoard(status) {
   const i = boardArr.indexOf(status);
   const container = document.getElementById(`taskContainers-${status}`);
@@ -295,12 +357,24 @@ function renderBoard(status) {
   AllTaskArr[i].forEach((task) => {
     taskMaker(task, `taskContainers-${status}`);
   });
+}
+function editFn(task) {
+  editingTask = task;
+  modalVisibility();
 
-  console.log("all task:", AllTaskArr);
+  let tempForm = document.getElementById("form");
+
+  tempForm.title.value = task.title;
+  tempForm.desc.value = task.description;
+  tempForm.status.value = task.status;
+  tempForm.priority.value = task.priority;
+
+  document.getElementById("submit-btn").textContent = "Save changes";
 }
 
 addtask();
 modal();
+renderBoard("Todo");
 
 //-------------DONE-------------
 //make priority, status inputs optional - !!! Long coding
@@ -310,11 +384,10 @@ modal();
 //filter into board array
 //sort by priority
 //drag & drop
+//edit
 
 //-------------TODO-------------
-//edit
 //delete
-
 //modal close when press outside
 //make card looks good, arrangement, edit, delete icon
 //background picture
